@@ -121,6 +121,24 @@ function error_path()
     error_exit "Path [$path] is invalid! Aborting"
   fi
 }
+#********************************************************************************
+#* Spinner
+#*
+#*
+function spinner()
+{
+
+pid2=$! # Process Id of the previous running command
+          spin='-\|/'
+          i=0
+          while kill -0 $pid2 2>/dev/null
+          do
+          i=$(( (i+1) %4 ))
+          printf " Working \r${spin:$i:1}"
+          sleep .1
+          done
+
+}
 #################################################################################
 # Functior: error_path2()                                                       #
 # Error checking                                                                #
@@ -172,17 +190,7 @@ echo "I am running as process $pid on this system."
         echo "Size    Mailbox"
         echo "---------------------"
         du -h --ma 1  | sed 's/\.$/Total_Size/' | sed 's/.\/Maildir-//g' | sed 's/.\/Maildir/Default_Mailbox/g'|sort -hk1 -k2 &
-        pid2=$! # Process Id of the previous running command
-
-spin='-\|/'
-
-i=0
-while kill -0 $pid2 2>/dev/null
-do
-  i=$(( (i+1) %4 ))
-  printf "\r${spin:$i:1}"
-  sleep .1
-done
+        spinner;
         echo "---------------------"
         break
         ;;
@@ -192,7 +200,8 @@ done
         path2=`echo "/local/archive/$visp/$tlk/$username"`
         error_path2;
         echo "Listing files in $path2"
-        ls -larth --color $path2
+        ls -larth --color $path2 &
+        spinner;
         break
         ;;
       "Restore Archive")
@@ -205,10 +214,10 @@ done
         echo
         echo "Select archive to restore"
         read archive
-      
-       
+            
         # Run external script   
-        /usr/bin/restore-archived-email.pl -i $visp -u $username -a $archive -t $ticket
+        /usr/bin/restore-archived-email.pl -i $visp -u $username -a $archive -t $ticket &
+        spinner;
         error_path;
         cd $path;
         echo $archive
@@ -216,7 +225,8 @@ done
         echo "Checking size of the directories. Please wait"
         echo "Size    Mailbox"
         echo "---------------------"
-        du -h --ma 1  | sed 's/\.$/Total_Size/' | sed 's/.\/Maildir-//g' | sed 's/.\/Maildir/Default_Mailbox/g'|sort -hk1 -k2
+        du -h --ma 1  | sed 's/\.$/Total_Size/' | sed 's/.\/Maildir-//g' | sed 's/.\/Maildir/Default_Mailbox/g'|sort -hk1 -k2 &
+        spinner;
         echo "---------------------"        
        
         ##################################################################################
@@ -251,11 +261,13 @@ done
         check_space;
         error_path;
         cd $path;
-        du -h --ma 1| sed 's/\.\///g'|sort -hk1 -k2
+        du -h --ma 1| sed 's/\.\///g'|sort -hk1 -k2 &
+        spinner;
         echo "Insert mailbox"
         read mailbox
         # Run external script
-        /usr/bin/archive-mailbox.pl -user $username -isp $visp -mailbox $mailbox -reason OVERUSAGE  -remove
+        /usr/bin/archive-mailbox.pl -user $username -isp $visp -mailbox $mailbox -reason OVERUSAGE  -remove &
+        spinner;
         break
         ;;
        "Date Removal")
@@ -263,7 +275,8 @@ done
         check_space;
         error_path;
         cd $path;
-        du -h --ma 1| sed 's/\.\///g'|sort -hk1 -k2
+        du -h --ma 1| sed 's/\.\///g'|sort -hk1 -k2 &
+        spinner;
         echo "Insert mailbox"
         read mailbox
         cd $path/$mailbox/cur;
@@ -280,7 +293,9 @@ done
         do
          echo "Please insert number of dayz: [days]"; read dayz; 
         done;
-       
+       echo "Backing up live mailbox. Please wait"
+         /usr/bin/archive-mailbox.pl -user $username -isp $visp -mailbox $mailbox -reason BACKUP -noremove &
+         spinner;   
         echo "You have selected to remove emails older than $dayz days"
        # date_removal=`find . -type f -mtime +$dayz  -printf "%TY-%Tm-%Td %TH:%TM %f\n"`
        random_file=`echo "/var/tmp/easymailman_date_removal_$RANDOM.txt"`
@@ -302,16 +317,8 @@ done
          read input_d
           if [[ $input_d == "Y" || $input_d == "y" ]]; then
             find . -type f -mtime +$dayz -print0  | xargs -0 -r -n 50 rm -f ;sleep 5 &
-          pid2=$! # Process Id of the previous running command
-          spin='-\|/'
-          i=0
-          while kill -0 $pid2 2>/dev/null
-          do
-          i=$(( (i+1) %4 ))
-          printf "Working \r${spin:$i:1}"
-          sleep .1
-          done
-                echo "Working . . . "           
+          spinner;
+                 
             sleep 2
             echo "Completed."
             echo " If you have accidentally removed files, please restore from snapshot using options 8"
@@ -332,11 +339,13 @@ done
         check_space;
         error_path;
         cd $path;
-        du -h --ma 1| sed 's/\.\///g'|sort -hk1 -k2
+        du -h --ma 1| sed 's/\.\///g'|sort -hk1 -k2 &
+        spinner;
         echo "Insert mailbox"
         read mailbox;
         # Run external script
-        /usr/bin/archive-mailbox.pl -user $username -isp $visp -mailbox $mailbox -reason BACKUP -noremove
+        /usr/bin/archive-mailbox.pl -user $username -isp $visp -mailbox $mailbox -reason BACKUP -noremove &
+        spinner;
         break
         ;;
       "Restore Destroyed")
@@ -353,7 +362,8 @@ done
             else        
               echo
               echo "Mailboxes on the live system"       
-              du -h --ma 1 --time| sed 's/\.\///g'|sort -hk1 -k2
+              du -h --ma 1 --time| sed 's/\.\///g'|sort -hk1 -k2 &
+              spinner;
               echo "Select mailbox to backup"
               read mailbox;
                 if [ -z "$mailbox" ];
@@ -368,7 +378,8 @@ done
           fi        
           # Run external script
          echo "Backing up live mailbox. Please wait"
-         /usr/bin/archive-mailbox.pl -user $username -isp $visp -mailbox $mailbox -reason BACKUP -noremove   
+         /usr/bin/archive-mailbox.pl -user $username -isp $visp -mailbox $mailbox -reason BACKUP -noremove &
+         spinner;   
   
             #################################################################################
             # Error checking                                                                #
@@ -388,7 +399,9 @@ done
             echo "Cannot find destroyed folder for this use $username. Exiting";
             exit 1;   
             else
-            du -h --ma 1 --time | sed -s 's/\.\///g'| grep "$username\+*"
+            du -h --ma 1 --time | sed -s 's/\.\///g'| grep "$username\+*" &
+            spinner;
+            echo
             echo "Select folder you would like to restore or CTRL-C to quit"
             read sfolder;
             if [[ $? -ne 0 ]] ; then
@@ -456,16 +469,17 @@ done
               error_exit "Path [$copyfrompath] is not available. Please check details"
               fi
               cd $copyfrompath;
-              pwd
+              #pwd
               #copy everything to $copytopath
-              echo cp -p -r * .??* $copytopath
-              cp -p -r * .??* $copytopath
+              # echo cp -p -r * .??* $copytopath
+              cp -p -r * .??* $copytopath &
+              spinner;
               cd $lpath
               echo "I have finished copying the files to [$lpath/$dest_path]. Check the size below"
               echo
-              echo "Size    Date    Mailbox"
+              echo "Size    Date              Mailbox"
               echo "---------------------------------------------------"   
-              du -h --ma 1 --time
+              du -h --ma 1 --time | sort -h
               echo "---------------------------------------------------"
               echo
               echo "***Finished***"   
@@ -535,7 +549,8 @@ done
                mkdir -p /local/archive/$visp/$tlk/$username/
                cd $path
                pwd
-               ls -d */ | cut -f1 -d'/' | while read line; do tar -czf /local/archive/$visp/$tlk/$username/$line-BACKUP_SNAPSHOT_`date +"-%H-%M-%d_%m_%y"`.tar $line/* ;done
+               ls -d */ | cut -f1 -d'/' | while read line; do tar -czf /local/archive/$visp/$tlk/$username/$line-BACKUP_SNAPSHOT_`date +"-%H-%M-%d_%m_%y"`.tar $line/* ;done &
+               spinner;
                echo       
                echo "Finished backing up"
                echo
@@ -544,7 +559,8 @@ done
                cd $selected_snapshot
                pwd
                echo
-               tar cf - * | ( cd /share/isp/$visp/mail/$tlk/$username && tar xf - )
+               tar cf - * | ( cd /share/isp/$visp/mail/$tlk/$username && tar xf - ) &
+               spinner;
                
                echo
                 echo " Finished restoring. Lets check the amount of files to confirm"

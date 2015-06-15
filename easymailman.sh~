@@ -301,7 +301,7 @@ done
          echo "Please confirm that you are happy to remove these files [Y,n]"
          read input_d
           if [[ $input_d == "Y" || $input_d == "y" ]]; then
-            find . -type f -mtime +$dayz -print0  | xargs -0 -r -n 50 rm -f ;sleep 5 &
+            find . -type f -mtime +$dayz -print0  | xargs -0 -r -n 50 rm -f &
           pid2=$! # Process Id of the previous running command
           spin='-\|/'
           i=0
