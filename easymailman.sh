@@ -1,5 +1,5 @@
 #!/bin/bash
-# set -x                                
+# set -x                                 
 #################################################################################
 #Mailspace management tool                                                      #
 #Provides easy check of space, list archived mailboxes, restore and backup      #
@@ -7,12 +7,12 @@
 #AUTHOR: Milan Bakos                                                            #
 #Date: September 2014                                                           #
 #Requires:restore-archived-email.pl, archive-mailbox.pl                         #
-#Version=1.1                                                                    #  
+#Version=1.1                                                                    #   
 #################################################################################
 #################################################################################
 # Variables used                                                                #
 # originalpath, ticket, username, visp, tlk, pid, path, data, check_tty, mailbox#
-# dest_path, path_dest,lpath,  sfolder, dfolder, copyfrompath,copytopath        #                                   
+# dest_path, path_dest,lpath,  sfolder, dfolder, copyfrompath,copytopath        #                                    
 #################################################################################
 clear
 # Check master server
@@ -40,10 +40,10 @@ function check_space()
 {
   echo  "Insert values in the format, etc Ticket: 90534898 on folan (force9): "
   read data
-  data=`echo $data | tr '[:upper:]' '[:lower:]'`
-  ticket=`echo $data|awk '{print $2}'`
-  username=`echo $data|awk '{print $4}'`
-  visp=`echo $data|awk '{print $5}'| sed 's/(//g'|sed 's/)//g'| sed 's/\.//g'`
+  data=`echo "$data" | tr '[:upper:]' '[:lower:]'`
+  ticket=`echo "$data"|awk '{print $2}'`
+  username=`echo "$data"|awk '{print $4}'`
+  visp=`echo "$data"|awk '{print $5}'| sed 's/(//g'|sed 's/)//g'| sed 's/\.//g'`
 ##################################################################################
 # Error checking                                                                 #
 # Check if ticket contains only numbers                                          #
@@ -56,9 +56,9 @@ function check_space()
     echo
     read -p "Please enter your ticket number: " ticket
    fi
-    until [[ $ticket =~ ^[0-9]+$ ]]
+    until [[ "$ticket" =~ ^[0-9]+$ ]]
     do
-    echo "Ticket '$ticket' -- Ticket number is incorrect, please insert correct ticket number:"; read ticket; 
+    echo "Ticket '$ticket' -- Ticket number is incorrect, please insert correct ticket number:"; read ticket;  
    done;
 #################################################################################
 # Error checking                                                                #
@@ -69,16 +69,16 @@ function check_space()
     then
       echo "VISP is not set please insert VISP: "
       read visp
-      visp=`echo $visp | tr '[:upper:]' '[:lower:]'`;
+      visp=`echo "$visp" | tr '[:upper:]' '[:lower:]'`;
   fi
-  until  [ $visp = "plusnet" ] || [ $visp = "force9" ] || [ $visp = "freeonline" ] || [ $visp = "vodafone" ]
+  until  [ "$visp" = "plusnet" ] || [ "$visp" = "force9" ] || [ "$visp" = "freeonline" ] || [ "$visp" = "vodafone" ]
     do
-      echo "-- The visp is now set at $visp ---- "
+      echo "-- The visp is now set at "$visp" ---- "
       echo "Invalid VISP, valid VISPS are : plusnet, force9, freeonline, vodafone. Please type the correct VISP:"; read visp
-      visp=`echo $visp | tr '[:upper:]' '[:lower:]'`;
+      visp=`echo "$visp" | tr '[:upper:]' '[:lower:]'`;
   done;
 ###################################################################################
-# Error checking                                                                  #     
+# Error checking                                                                  #      
 # Check if username is empty                                                      #
 # Asks for username until has a value                                             #
 ###################################################################################
@@ -89,13 +89,13 @@ function check_space()
   fi
    until [[ ! -z "$username" ]]
     do
-    echo "username is empty. Please insert again"; read username; 
+    echo "username is empty. Please insert again"; read username;  
   done;
- 
-  username=`echo $username | tr '[:upper:]' '[:lower:]'`;
-  tlk=`echo $username|cut -c 1,2`
-  path=`echo "/share/isp/$visp/mail/$tlk/$username"`
-  path_dest=`echo /share/isp/$visp/mail/$tlk/Destroyed`
+  
+  username=`echo "$username" | tr '[:upper:]' '[:lower:]'`;
+  tlk=`echo "$username"|cut -c 1,2`
+  path=`echo "/share/isp/"$visp"/mail/"$tlk"/"$username""`
+  path_dest=`echo /share/isp/"$visp"/mail/"$tlk"/Destroyed`
 } #End of check_space function
 #################################################################################
 # Function error_exit                                                           #
@@ -111,14 +111,14 @@ function error_exit()
 # Functior: error_path()                                                        #
 # Error checking                                                                #
 # Path error checked                                                            #
-# Expects: valid path                                                           # 
+# Expects: valid path                                                           #  
 # Returns: error if invalid                                                     #
 #################################################################################
 function error_path()
 {
-  if [ ! -d $path ];
+  if [ ! -d "$path" ];
   then
-    error_exit "Path [$path] is invalid! Aborting"
+    error_exit "Path ["$path"] is invalid! Aborting"
   fi
 }
 #################################################################################
@@ -130,21 +130,21 @@ function error_path()
 #################################################################################
 function error_path2()
 {
-  if [ ! -d $path2 ];
+  if [ ! -d "$path2" ];
   then
-    error_exit "Path [$path2] is invalid or there is no archive available! Aborting"
+    error_exit "Path ["$path2"] is invalid or there is no archive available! Aborting"
   fi
 }
 ##################################################################################
 # Self check if terminal session is still open                                   #
 # Get self pid to check if terminal session is still open and kill itself if not #
 # Expects: tty still active                                                      #
-# Returns: nothing                                                               # 
+# Returns: nothing                                                               #  
 ##################################################################################
 pid=$$;
 echo "I am running as process $pid on this system."
 #echo "Mailpolicing in progress - please do not use archive mailbox option at the moment"
-################################################################################### 
+###################################################################################  
 # Create menu and offer choices                                                   #
 # Options: Check size,List archive, Restore Archive, Archive Emails,Backup Emails #
 #          Quit                                                                   #
@@ -165,228 +165,210 @@ echo "I am running as process $pid on this system."
         echo "Check size of a mailbox"
         check_space;
         echo
-        echo "Checking size of $path"
+        echo "Checking size of "$path""
         sleep 1
         error_path;
-        cd $path;
+        cd "$path";
         echo "Size    Mailbox"
         echo "---------------------"
-        du -h --ma 1  | sed 's/\.$/Total_Size/' | sed 's/.\/Maildir-//g' | sed 's/.\/Maildir/Default_Mailbox/g'|sort -hk1 -k2 &
-        pid2=$! # Process Id of the previous running command
-
-spin='-\|/'
-
-i=0
-while kill -0 $pid2 2>/dev/null
-do
-  i=$(( (i+1) %4 ))
-  printf "\r${spin:$i:1}"
-  sleep .1
-done
+        du -h --ma 1  | sed 's/\.$/Total_Size/' | sed 's/.\/Maildir-//g' | sed 's/.\/Maildir/Default_Mailbox/g'|sort -hk1 -k2
         echo "---------------------"
         break
         ;;
       "List archive")
         echo "List available archives"
         check_space;
-        path2=`echo "/local/archive/$visp/$tlk/$username"`
+        path2=`echo "/local/archive/"$visp"/"$tlk"/"$username""`
         error_path2;
-        echo "Listing files in $path2"
-        ls -larth --color $path2
+        echo "Listing files in "$path2""
+        ls -lrh --color "$path2"
         break
         ;;
       "Restore Archive")
         echo "Restore archived emails"
         check_space;
-        path2=`echo "/local/archive/$visp/$tlk/$username"`
+        path2=`echo "/local/archive/"$visp"/"$tlk"/"$username""`
         error_path2;
-        echo "Listing files in $path2"
-        ls -larth --color $path2
+        echo "Listing files in "$path2""
+        ls -lrh --color "$path2"
         echo
         echo "Select archive to restore"
         read archive
-      
        
-        # Run external script   
-        /usr/bin/restore-archived-email.pl -i $visp -u $username -a $archive -t $ticket
+        
+        # Run external script    
+        /usr/bin/restore-archived-email.pl -i "$visp" -u "$username" -a "$archive" -t "$ticket"
         error_path;
-        cd $path;
-        echo $archive
+        cd "$path";
+        echo "$archive"
         echo
         echo "Checking size of the directories. Please wait"
         echo "Size    Mailbox"
         echo "---------------------"
         du -h --ma 1  | sed 's/\.$/Total_Size/' | sed 's/.\/Maildir-//g' | sed 's/.\/Maildir/Default_Mailbox/g'|sort -hk1 -k2
-        echo "---------------------"        
-       
+        echo "---------------------"         
+        
         ##################################################################################
         #Over usage 7 days removal                                                       #
         ##################################################################################
-       
+        
         NEW_DATE=$(date -d "+8 days")
-        if echo $archive | grep --quiet OVERUSAGE
+        if echo "$archive" | grep --quiet OVERUSAGE
           then
           echo "Overusage archive detected"
           sleep 1
+          echo
           echo "Do you want to add the user to the list of excluded users for 7 days? [Y,n]"
-          
+           
           read input
           if [[ $input == "Y" || $input == "y" ]]; then
-            echo "$username, $visp, $now, $NEW_DATE" >> /var/tmp/easymailman_userlist.txt
-            echo "$username has been added to the exclusion file"
+            echo ""$username", "$visp", "$now", "$NEW_DATE"" >> /var/tmp/easymailman_userlist.txt
+            echo ""$username" has been added to the exclusion file"
             else
               echo
-         
+          
           fi
-        
+         
          else
-            echo
-  
+            echo 
+   
         fi
-        cd $originalpath /dev/null
+        cd "$originalpath" /dev/null
         break
         ;;
       "Archive Emails")
-        echo "Archive emails"     
+        echo "Archive emails"      
         check_space;
         error_path;
-        cd $path;
+        cd "$path";
         du -h --ma 1| sed 's/\.\///g'|sort -hk1 -k2
         echo "Insert mailbox"
         read mailbox
         # Run external script
-        /usr/bin/archive-mailbox.pl -user $username -isp $visp -mailbox $mailbox -reason OVERUSAGE  -remove
-        break
+        REASON2=OVERUSAGE        
+       read -p "Insert reason: [$REASON2] " reasontemp; 
+       reason=${reasontemp:-$REASON2}
+       /usr/bin/archive-mailbox.pl -user "$username" -isp "$visp" -mailbox "$mailbox" -reason "$reason"  -remove
+       break
         ;;
        "Date Removal")
-        echo "Remove emails older than x days"     
+        echo "Remove emails older than x days"      
         check_space;
         error_path;
         cd $path;
-        du -h --ma 1| sed 's/\.\///g'|sort -hk1 -k2
+		  echo " Checking directories"        
+        du -h --ma 3| sed 's/\.\///g'|sort -hk1 -k2
         echo "Insert mailbox"
-        read mailbox
-        cd $path/$mailbox/cur;
-        error_path;
-        total_files=`ls -1 | wc -l`   
+        read  mailbox
+        cd "$path"/"$mailbox";
+        total_files=`ls -1 | wc -l`	
         pwd
-        echo "Delete emails older than : [days]"
-          read dayz;
-             #############################################################
-             # Check $dayz is a number                                                #
-             #                                                                                 #
-             #############################################################
-         until [[ $dayz =~ ^[0-9]+$ ]]
+        echo "Delete emails older than : [days]" 
+		  read "dayz"; 
+ 			#############################################################
+ 			# Check $dayz is a number				#
+ 			#		 					#
+ 			#############################################################
+		 until [[ "$dayz" =~ ^[0-9]+$ ]]
         do
-         echo "Please insert number of dayz: [days]"; read dayz; 
-        done;
-       
-        echo "You have selected to remove emails older than $dayz days"
+         echo "Please insert number of dayz: [days]"; read dayz;  
+        done; 
+	    
+        echo "You have selected to remove emails older than "$dayz" days"
        # date_removal=`find . -type f -mtime +$dayz  -printf "%TY-%Tm-%Td %TH:%TM %f\n"`
        random_file=`echo "/var/tmp/easymailman_date_removal_$RANDOM.txt"`
-        find . -type f -mtime +$dayz  -printf "%TY-%Tm-%Td %TH:%TM %f\n" | sort -rMk1 | tee $random_file
-       
-        date_removal=`cat $random_file`
-        removed_files=`cat $random_file | wc -l`  
+        find . -type f -mtime +"$dayz"  -printf "%TY-%Tm-%Td %TH:%TM %f\n" | sort -rMk1 | tee $random_file
+        date_removal=`cat "$random_file"`
+        removed_files=`cat "$random_file" | wc -l`   
         if [ -z "$date_removal" ];
         then
-        rm -f $random_file;
+        rm -f "$random_file"; 
         error_exit "but I could not find any files that matched your request. Eeeeerrrrroorrrr. Quitting."
-       
-              else
-           
-            echo "I am going to remove" $removed_files "files from" `echo $path/$mailbox/cur`
-            echo       
-         rm -f $random_file;
-         echo "Please confirm that you are happy to remove these files [Y,n]"
+        
+              else 
+         echo   
+			echo "I am going to remove" "$removed_files" "files from" `echo "$path"/"$mailbox"`
+			echo        
+         rm -f "$random_file"; 
+         echo "Please confirm that you are happy to remove these files [Y,n]" 
          read input_d
-          if [[ $input_d == "Y" || $input_d == "y" ]]; then
-            find . -type f -mtime +$dayz -print0  | xargs -0 -r -n 50 rm -f ;sleep 5 &
-          pid2=$! # Process Id of the previous running command
-          spin='-\|/'
-          i=0
-          while kill -0 $pid2 2>/dev/null
-          do
-          i=$(( (i+1) %4 ))
-          printf "Working \r${spin:$i:1}"
-          sleep .1
-          done
-                echo "Working . . . "           
+          if [[ "$input_d" == "Y" || "$input_d" == "y" ]]; then
+            find . -type f -mtime +"$dayz" -print0  | xargs -0 -r -n 50 rm -f
+				echo "Working . . . "            
             sleep 2
             echo "Completed."
             echo " If you have accidentally removed files, please restore from snapshot using options 8"
             else
               error_exit "Aborting action."
-             
+              
               fi
-              cd   $path/$mailbox/cur;
-         echo "Total amount of files before deletion: $total_files"
-         echo "I have removed $removed_files files."
+         cd   "$path"/"$mailbox";
+         echo "Total amount of files before deletion: "$total_files""
+         echo "I have removed "$removed_files" files."
          echo "Amount of files left in the folder:" `ls -1 | wc -l`
-         fi 
-      
+         fi  
         break
         ;;
       "Backup Emails")
         echo "You chose to backup emails"
         check_space;
         error_path;
-        cd $path;
+        cd "$path;"
         du -h --ma 1| sed 's/\.\///g'|sort -hk1 -k2
         echo "Insert mailbox"
         read mailbox;
         # Run external script
-        /usr/bin/archive-mailbox.pl -user $username -isp $visp -mailbox $mailbox -reason BACKUP -noremove
+        /usr/bin/archive-mailbox.pl -user "$username" -isp "$visp" -mailbox "$mailbox" -reason BACKUP -noremove
         break
         ;;
       "Restore Destroyed")
-        echo "You have chosen to restore emails from destroyed folder";
-        check_space;
-        error_path;
-            #Backup the mailbox first
-        cd $path;
-        live_username=`du -h --ma 1 --time | wc -l`
-            if [ $live_username == 1 ];
+		echo "You have chosen to restore emails from destroyed folder";
+		check_space;
+      error_path;
+		#Backup the mailbox first
+      cd "$path";
+      live_username=`du -h --ma 1 --time | wc -l`
+		  if [ "$live_username" == 1 ];
           then
           echo "Cannot find any mailboxes for this user $username. Exiting";
-          exit 1;   
-            else        
+          exit 1;	
+            else         
               echo
-              echo "Mailboxes on the live system"       
+              echo "Mailboxes on the live system"        
               du -h --ma 1 --time| sed 's/\.\///g'|sort -hk1 -k2
               echo "Select mailbox to backup"
               read mailbox;
                 if [ -z "$mailbox" ];
-            then
-            echo "Mailbox is empty please select: "
-            read mailbox;
-             fi
-            until [ ! -z "$mailbox" ]
-                do
-                echo "Mailbox is empty. Please insert again"; read mailbox; 
-                done;         
-          fi        
+			then
+			echo "Mailbox is empty please select: "
+			read mailbox;
+			 fi
+			until [ ! -z "$mailbox" ]
+				do
+				echo "Mailbox is empty. Please insert again"; read mailbox;  
+				done;          
+          fi         
           # Run external script
          echo "Backing up live mailbox. Please wait"
-         /usr/bin/archive-mailbox.pl -user $username -isp $visp -mailbox $mailbox -reason BACKUP -noremove   
-  
+         /usr/bin/archive-mailbox.pl -user "$username" -isp "$visp" -mailbox "$mailbox" -reason BACKUP -noremove	
+   
             #################################################################################
             # Error checking                                                                #
             # Path error checked                                                            #
-            # Expects: valid path                                                           # 
+            # Expects: valid path                                                           #  
             # Returns: error if invalid                                                     #
             #################################################################################
-            #Check if directory is available in the destroyed folder   
-            if [ ! -d $path_dest ];
+            #Check if directory is available in the destroyed folder	
+            if [ ! -d "$path_dest" ];
               then
-              error_exit "Path [$path_dest] is not available. Please check the details or there are no folders available"
-            fi   
+              error_exit "Path ["$path_dest"] is not available. Please check the details or there are no folders available"
+            fi	
             cd $path_dest;
             dest_username=`du -h --ma 1 --time | grep "$username\+*" | wc -l`
-            if [ $dest_username == 0 ];
+            if [ "$dest_username" == 0 ];
             then
-            echo "Cannot find destroyed folder for this use $username. Exiting";
-            exit 1;   
+            echo "Cannot find destroyed folder for this user "$username". Exiting";
+            exit 1;	
             else
             du -h --ma 1 --time | sed -s 's/\.\///g'| grep "$username\+*"
             echo "Select folder you would like to restore or CTRL-C to quit"
@@ -398,12 +380,12 @@ done
               ################################################################################
               # Error checking                                                               #
               # Check that mailbox is selected                                               #
-              # Expects: valid directory                                                     # 
+              # Expects: valid directory                                                     #  
               # Returns: error if invalid                                                    #
               ################################################################################
-              if [ ! -d $sfolder ];
+              if [ ! -d "$sfolder" ];
               then
-              error_exit "Path [$path_dest/$sfolder] is not available. Please check the details or there are no folders available"
+              error_exit "Path ["$path_dest"/"$sfolder"] is not available. Please check the details or there are no folders available"
               fi
               if [ -z "$sfolder" ];
               then
@@ -412,7 +394,7 @@ done
               fi
               until [ ! -z "$sfolder" ]
               do
-              echo "Destroyed mailbox is empty. Please insert again"; read sfolder; 
+              echo "Destroyed mailbox is empty. Please insert again"; read sfolder;  
               done;
               ###################################################################################
               #translate destroyed folder to live maildirectory for validation                  #
@@ -420,142 +402,142 @@ done
               # Returns: Maildir or Maildir+$mailbox                                            #
               ###################################################################################
               if [[ "$sfolder" == *+* ]]; then
-              dest_path=`echo $sfolder | tr _ ' ' | awk '{print $1}' | grep '+' | tr '+' ' ' | awk '{ print "Maildir-" $2 }'`
+              dest_path=`echo "$sfolder" | tr _ ' ' | awk '{print $1}' | grep '+' | tr '+' ' ' | awk '{ print "Maildir-" $2 }'`
               if [ -z "$dest_path" ];
               then
               echo "Error with mailboxes. Please check your details. "
               error_exit;
-              fi     
-              echo "Mailbox name on the live system = " $dest_path
+              fi	 
+              echo "Mailbox name on the live system = " "$dest_path"
               else
               dest_path="Maildir"
               fi
               #################################################################################
               # Error checking                                                                #
               # Live System Path error checked                                                #
-              # Expects: valid path                                                           # 
+              # Expects: valid path                                                           #  
               # Returns: error if invalid                                                     #
               #################################################################################
               lpath=`echo /share/isp/$visp/mail/$tlk/$username`
-              if [ ! -d $lpath ];
+              if [ ! -d "$lpath" ];
               then
-              error_exit "Path [$lpath] is not available. Please check details"
+              error_exit "Path ["$lpath"] is not available. Please check details"
               fi
               cd $lpath
-              if [ ! -d $dest_path ];
+              if [ ! -d "$dest_path" ];
               then
-              error_exit "Mailbox [$lpath/$dest_path] is not available. Please check details"
+              error_exit "Mailbox ["$lpath"/"$dest_path"] is not available. Please check details"
               fi
-              echo "We are going to copy emails from $path_dest/$sfolder to $lpath/$dest_path. Press Enter to confirm or CTRL-C to quit"
+              echo "We are going to copy emails from "$path_dest"/"$sfolder" to "$lpath"/"$dest"_path. Press Enter to confirm or CTRL-C to quit"
               read
-              copyfrompath=`echo $path_dest/$sfolder`;
-              copytopath=`echo $lpath/$dest_path`;
-              cd $copyfrompath;
-              if [ ! -d $copyfrompath ];
+              copyfrompath=`echo "$path_dest"/"$sfolder"`;
+              copytopath=`echo "$lpath"/"$dest_path"`;
+              cd "$copyfrompath";
+              if [ ! -d "$copyfrompath" ];
               then
-              error_exit "Path [$copyfrompath] is not available. Please check details"
+              error_exit "Path ["$copyfrompath"] is not available. Please check details"
               fi
-              cd $copyfrompath;
+              cd "$copyfrompath";
               pwd
               #copy everything to $copytopath
-              echo cp -p -r * .??* $copytopath
-              cp -p -r * .??* $copytopath
+              echo cp -p -r * .??* "$copytopath"
+              cp -p -r * .??* "$copytopath" 
               cd $lpath
-              echo "I have finished copying the files to [$lpath/$dest_path]. Check the size below"
+              echo "I have finished copying the files to ["$lpath"/"$dest_path"]. Check the size below"
               echo
-              echo "Size    Date    Mailbox"
-              echo "---------------------------------------------------"   
+              echo "Size	Date	Mailbox"
+              echo "---------------------------------------------------"	
               du -h --ma 1 --time
               echo "---------------------------------------------------"
               echo
-              echo "***Finished***"   
+              echo "***Finished***"	
               break
-                    ;;
+					;;
               "Snapshot")
-                 echo "You chose Snapshot"
-                 check_space;
-                 error_path;
-              cd $path;
+       		  echo "You chose Snapshot"
+       		  check_space;
+       		  error_path;
+              cd "$path";
               Mymailvol=$( df . | grep /visp | awk '{print $5$6}' )
-               echo "We are using $Mymailvol"
-               echo ""
-               Mylocalfiles=$(find . -type f | wc -l)      
-               echo "The user : $username :  currently has $Mylocalfiles in their local directory "
-               echo "Checking snapshot directories "
-               #echo "Checking Nightly.0"
-               #find $Mymailvol/.snapshot/nightly.0/$visp/$tlk/$username/ -type f | wc -l
-               My_nightly0_res=$(find $Mymailvol/.snapshot/nightly.0/$visp/$tlk/$username/ -type f | wc -l)
-               My_nightly0=($Mymailvol/.snapshot/nightly.0/$visp/$tlk/$username/)
-               My_nightly0_res_c=$(echo $My_nightly0_res $My_nightly0)
-               #echo "$My_nightly0"
-              
-             
-               #echo "Checking Nightly.1"
-               #find $Mymailvol/.snapshot/nightly.1/$visp/$tlk/$username/ -type f | wc -l
-               My_nightly1_res=$(find $Mymailvol/.snapshot/nightly.1/$visp/$tlk/$username/ -type f | wc -l)
-               My_nightly1=($Mymailvol/.snapshot/nightly.1/$visp/$tlk/$username/)
-               My_nightly1_res_c=$(echo $My_nightly1_res $My_nightly1)
-               #echo "$My_nightly1"
-              
-               #echo "Checking Nightly.2"
-               #find $Mymailvol/.snapshot/nightly.2/$visp/$tlk/$username/ -type f | wc -l
-               My_nightly2_res=$(find $Mymailvol/.snapshot/nightly.2/$visp/$tlk/$username/ -type f | wc -l)
-               My_nightly2=($Mymailvol/.snapshot/nightly.2/$visp/$tlk/$username/)
-               My_nightly2_res_c=$(echo $My_nightly2_res $My_nightly2)
-               #echo "$My_nightly2"
-         
-               #echo "Checking Nightly.3"
-               #find $Mymailvol/.snapshot/nightly.3/$visp/$tlk/$username/ -type f | wc -l
-               My_nightly3=($Mymailvol/.snapshot/nightly.3/$visp/$tlk/$username/)
-               My_nightly3_res=$(find $Mymailvol/.snapshot/nightly.3/$visp/$tlk/$username/ -type f | wc -l)
-               My_nightly3_res_c=$(echo $My_nightly3_res $My_nightly3)
-               #echo "$My_nightly3"
-               #echo "Checking Nightly.4"
-               #find $Mymailvol/.snapshot/nightly.4/$visp/$tlk/$username/ -type f | wc -l
-               My_nightly4_res=$(find $Mymailvol/.snapshot/nightly.4/$visp/$tlk/$username/ -type f | wc -l)
-               My_nightly4=($Mymailvol/.snapshot/nightly.4/$visp/$tlk/$username/)
-               My_nightly4_res_c=$(echo $My_nightly4_res $My_nightly4)
-               #echo "$My_nightly4"
-               #echo "Checking Weekly.0"
-               #find $Mymailvol/.snapshot/weekly.0/$visp/$tlk/$username/ -type f | wc -l
-               My_weekly0_res=$(find $Mymailvol/.snapshot/weekly.0/$visp/$tlk/$username/ -type f | wc -l)
-               My_weekly0=($Mymailvol/.snapshot/weekly.0/$visp/$tlk/$username/)
-               My_weekly0_res_c=$(echo $My_weekly0_res $My_weekly0)
-               #echo "$My_weekly0"
-              
-               array=("$My_nightly0_res_c" "$My_nightly1_res_c" "$My_nightly2_res_c" "$My_nightly3_res_c" "$My_nightly4_res_c" "$My_weekly0_res_c")
-                 IFS=$'\n' sorted=($(sort -rn <<<"${array[*]}"))
-                 printf "[%s]\n" "${sorted[@]}"
-               # Select directory to restore
-               echo "Select snapshot to restore from :"
-               read selected_snapshot;
-               echo "You have selected : $selected_snapshot"
-               # backup live directory
-               echo "Backing up all of the live mailboxes"
-               mkdir -p /local/archive/$visp/$tlk/$username/
-               cd $path
-               pwd
-               ls -d */ | cut -f1 -d'/' | while read line; do tar -czf /local/archive/$visp/$tlk/$username/$line-BACKUP_SNAPSHOT_`date +"-%H-%M-%d_%m_%y"`.tar $line/* ;done
-               echo       
-               echo "Finished backing up"
-               echo
-               echo "Restoring files. Please wait"
-               echo
-               cd $selected_snapshot
-               pwd
-               echo
-               tar cf - * | ( cd /share/isp/$visp/mail/$tlk/$username && tar xf - )
-               
-               echo
-                echo " Finished restoring. Lets check the amount of files to confirm"
-                sleep 1
-                cd $path
-                echo "The user : $username :  previously had $Mylocalfiles files in their local directory "
-                echo "Amount of the files after restoration: "; find -type f| wc -l
-                  
-               break
-               ;;
-       
+      	     echo "We are using "$Mymailvol""
+		       echo ""
+		       echo "Checking available files"
+		       Mylocalfiles=$(find . -type f | wc -l)       
+		       echo "The user : "$username" :  currently has "$Mylocalfiles" in their local directory "
+		       echo "Checking snapshot directories "
+		       #echo "Checking Nightly.0"
+		       #find $Mymailvol/.snapshot/nightly.0/$visp/$tlk/$username/ -type f | wc -l 
+		       My_nightly0_res=$(find "$Mymailvol"/.snapshot/nightly.0/"$visp"/"$tlk"/"$username"/ -type f | wc -l)
+		       My_nightly0=("$Mymailvol"/.snapshot/nightly.0/"$visp"/"$tlk"/"$username"/)
+		       My_nightly0_res_c=$(echo "$My_nightly0_res" "$My_nightly0")
+		       #echo "$My_nightly0"
+		           
+		       #echo "Checking Nightly.1"
+		       #find $Mymailvol/.snapshot/nightly.1/$visp/$tlk/$username/ -type f | wc -l
+		       My_nightly1_res=$(find "$Mymailvol"/.snapshot/nightly.1/"$visp"/"$tlk"/"$username"/ -type f | wc -l)
+		       My_nightly1=("$Mymailvol"/.snapshot/nightly.1/"$visp"/"$tlk"/"$username"/)
+		       My_nightly1_res_c=$(echo "$My_nightly1_res" "$My_nightly1")
+		       #echo "$My_nightly1"
+		       
+		       #echo "Checking Nightly.2"
+		       #find $Mymailvol/.snapshot/nightly.2/$visp/$tlk/$username/ -type f | wc -l
+		       My_nightly2_res=$(find "$Mymailvol"/.snapshot/nightly.2/"$visp"/"$tlk"/"$username"/ -type f | wc -l)
+		       My_nightly2=("$Mymailvol"/.snapshot/nightly.2/"$visp"/"$tlk"/"$username"/)
+		       My_nightly2_res_c=$(echo "$My_nightly2_res" "$My_nightly2")
+		       #echo "$My_nightly2"
+		 
+		       #echo "Checking Nightly.3"
+		       #find $Mymailvol/.snapshot/nightly.3/$visp/$tlk/$username/ -type f | wc -l
+		       My_nightly3=("$Mymailvol"/.snapshot/nightly.3/"$visp"/"$tlk"/"$username"/)
+		       My_nightly3_res=$(find "$Mymailvol"/.snapshot/nightly.3/"$visp"/"$tlk"/"$username"/ -type f | wc -l)
+		       My_nightly3_res_c=$(echo "$My_nightly3_res" "$My_nightly3")
+		       #echo "$My_nightly3"
+		       #echo "Checking Nightly.4"
+		       #find $Mymailvol/.snapshot/nightly.4/$visp/$tlk/$username/ -type f | wc -l
+		       My_nightly4_res=$(find "$Mymailvol"/.snapshot/nightly.4/"$visp"/"$tlk"/"$username"/ -type f | wc -l)
+		       My_nightly4=("$Mymailvol"/.snapshot/nightly.4/"$visp"/"$tlk"/"$username"/)
+		       My_nightly4_res_c=$(echo "$My_nightly4_res" "$My_nightly4")
+		       #echo "$My_nightly4"
+		       #echo "Checking Weekly.0"
+		       #find $Mymailvol/.snapshot/weekly.0/$visp/$tlk/$username/ -type f | wc -l
+		       My_weekly0_res=$(find "$Mymailvol"/.snapshot/weekly.0/"$visp"/"$tlk"/"$username"/ -type f | wc -l)
+		       My_weekly0=("$Mymailvol"/.snapshot/weekly.0/"$visp"/"$tlk"/"$username"/)
+		       My_weekly0_res_c=$(echo "$My_weekly0_res" "$My_weekly0")
+		       #echo "$My_weekly0"
+		       
+		       array=("$My_nightly0_res_c" "$My_nightly1_res_c" "$My_nightly2_res_c" "$My_nightly3_res_c" "$My_nightly4_res_c" "$My_weekly0_res_c")
+				 IFS=$'\n' sorted=($(sort -rn <<<"${array[*]}"))
+				 printf "[%s]\n" "${sorted[@]}"
+		       # Select directory to restore
+		       echo "Select snapshot to restore from :"
+		       read selected_snapshot;
+		       echo "You have selected : "$selected_snapshot""
+		       # backup live directory
+		       echo "Backing up all of the live mailboxes"
+		       mkdir -p /local/archive/"$visp"/"$tlk"/"$username"/
+		       cd "$path"
+		       pwd
+		       ls -d */ | cut -f1 -d'/' | while read line; do tar -czf /local/archive/"$visp"/"$tlk"/"$username"/"$line"-BACKUP_SNAPSHOT_`date +"-%H-%M-%d_%m_%y"`.tar "$line"/* ;done
+		       echo        
+		       echo "Finished backing up"
+		       echo
+		       echo "Restoring files. Please wait"
+		       echo
+		       cd "$selected_snapshot"
+		       pwd
+		       echo 
+		       tar cf - * | ( cd /share/isp/"$visp"/mail/"$tlk"/"$username" && tar xf - ) 
+		        
+		       echo
+		   	 echo " Finished restoring. Lets check the amount of files to confirm"
+		   	 sleep 1
+		   	 cd "$path"
+		   	 echo "The user : "$username" :  previously had "$Mylocalfiles" files in their local directory "
+		   	 printf "Amount of the files after restoration: "; find -type f| wc -l
+		           
+		       break
+		       ;;
+        
         "Quit")
         echo
         echo "Bye Bye"
@@ -565,10 +547,9 @@ done
       *) echo invalid option;;
       esac
       done
-   
+    
  else
 kill $pid
  
 fi
 done
-
